@@ -1,10 +1,9 @@
-FROM shadowrobot/dexterous-hand:kinetic-night-build
+# Use an official ROS Kinetic runtime as a parent image
+FROM ros:kinetic-ros-base-xenial
 
-RUN apt-get update \
-&& apt-get install -y --no-install-recommends pkg-config libxau-dev libxdmcp-dev libxcb1-dev libxext-dev libx11-dev \
-ros-kinetic-rosserial ros-kinetic-rosserial-arduino \
-&& rm -rf /var/lib/apt/lists/*
+LABEL maintainer Cristian Beltran "beltran@hlab.sys.es.osaka-u.ac.jp"
 
+# install universal robot ros packages
 RUN apt-get update && apt-get install -y \
     ros-kinetic-universal-robot \
     ros-kinetic-ros-control \
@@ -34,19 +33,36 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up the workspace
-# RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash \
-#                && mkdir -p ~/projects/shadow_robot/base/src \
-#                && cd /home/user/projects/shadow_robot/base/ \
-#                && catkin init \
-#                && echo 'source ~/projects/shadow_robot/base/devel/setup.bash' >> ~/.bashrc "
+RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash \
+                && mkdir -p ~/ros_ws/src \
+                && cd ~/ros_ws/ \
+                && catkin init \
+                && echo 'source ~/ros_ws/devel/setup.bash' >> ~/.bashrc "
 
 # Installing repo required for homework
-RUN /bin/bash -c "cd /home/user/projects/shadow_robot/base/src \
+RUN /bin/bash -c "cd ~/ros_ws/src \
                && git clone https://github.com/cambel/ur3.git ur3"
 
+
 # # Updating ROSDEP and installing dependencies
-RUN cd /home/user/projects/shadow_robot/base \
-    && rosinstall /home/user/projects/shadow_robot/base/src /opt/ros/kinetic src/ur3/dependencies.rosinstall \
+RUN cd ~/ros_ws \
+    && rosinstall ~/ros_ws/src /opt/ros/kinetic src/ur3/dependencies.rosinstall \
+    && apt-get update \
+    && rosdep fix-permissions \
+    && rosdep update \
+    && rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN /bin/bash -c "cd ~/ros_ws/src \
+                  && git clone https://github.com/shadow-robot/sr-teleop.git \
+                  && git clone https://github.com/shadow-robot/sr_common \
+                  && git clone https://github.com/shadow-robot/sr_core \
+                  && git clone https://github.com/shadow-robot/ros_ethercat \
+                  && git clone https://github.com/shadow-robot/sr-config"
+
+# # Updating ROSDEP and installing dependencies
+RUN cd ~/ros_ws \
+    && rosinstall ~/ros_ws/src /opt/ros/kinetic src/sr-teleop/repository.rosinstall \
     && apt-get update \
     && rosdep fix-permissions \
     && rosdep update \
@@ -63,7 +79,7 @@ RUN cd /usr/lib/x86_64-linux-gnu/ \
 
 # Sourcing
 RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash \
-               && cd /home/user/projects/shadow_robot/base/ \
+               && cd ~/ros_ws \
                && rm -rf build \
                && catkin build"
 
@@ -104,29 +120,23 @@ ENV LD_LIBRARY_PATH /usr/lib/nvidia-418:/usr/lib32/nvidia-418:$LD_LIBRARY_PATH
 RUN apt-get update && apt-get install -y ros-kinetic-industrial-core \
     && rm -rf /var/lib/apt/lists/*
 
-RUN /bin/bash -c "cd /home/user/projects/shadow_robot/base/src \
+RUN /bin/bash -c "cd ~/ros_ws/src \
                && git clone https://github.com/ros-industrial/ur_modern_driver.git \
                && cd ur_modern_driver \
                && git fetch origin pull/310/head:ur-e && git checkout ur-e \
                && catkin build ur_modern_driver "
 
+CMD ["bash"]
 
-# replace with other Ubuntu version if desired
-# see: https://hub.docker.com/r/nvidia/opengl/
-COPY --from=nvidia/opengl:1.0-glvnd-runtime-ubuntu16.04 /usr/local/lib/x86_64-linux-gnu /usr/local/lib/x86_64-linux-gnu
-
-# replace with other Ubuntu version if desired
-# see: https://hub.docker.com/r/nvidia/opengl/
-COPY --from=nvidia/opengl:1.0-glvnd-runtime-ubuntu16.04 /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
-
-RUN echo '/usr/local/lib/x86_64-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf \
-&& ldconfig \
-&& echo '/usr/local/$LIB/libGL.so.1' >> /etc/ld.so.preload \
-&& echo '/usr/local/$LIB/libEGL.so.1' >> /etc/ld.so.preload
-
-
-# nvidia-container-runtime
-ENV NVIDIA_VISIBLE_DEVICES ${NVIDIA_VISIBLE_DEVICES:-all}
-ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
-
-
+# docker create -it \
+#     --env="DISPLAY" \
+#     --env="QT_X11_NO_MITSHM=1" \
+#     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+#     --device=/dev/dri:/dev/dri \
+#     --privileged -e DISPLAY=unix$DISPLAY \
+#     -v /usr/lib/nvidia-390:/usr/lib/nvidia-390 \
+#     -v /usr/lib32/nvidia-390:/usr/lib32/nvidia-390 \
+#     --name=ros-gps \
+#     registry.gitlab.com/cambel/gps && \
+#  export containerId=$(docker ps -l -q) && \
+#  xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $containerId` && \

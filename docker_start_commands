@@ -1,0 +1,14 @@
+docker create -it \
+   --env="DISPLAY" \
+   --env="QT_X11_NO_MITSHM=1" \
+   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+   --privileged
+   --network=host \
+   --name=ros-ur3e \
+   ur3e
+
+export containerId=$(sudo docker ps -l -q) && \
+xhost +local:`sudo docker inspect --format='{{ .Config.Hostname }}' $containerId` && \
+docker start $containerId
+
+docker exec -it $containerId /bin/bash

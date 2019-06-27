@@ -1,0 +1,14 @@
+version: '2'
+services:
+  ur3e_hand_teleop:
+    build: .
+    environment:
+     - DISPLAY
+     - QT_X11_NO_MITSHM=1
+    volumes:
+     - /tmp/.X11-unix:/tmp/.X11-unix:rw
+     - /home/ur3e/Documents/ur3e_hand_teleop/mount_point:/root/ros_ws/src/mount_point
+    privileged: true
+    network_mode: "host"
+    tty: true
+    container_name: ur3e_hand_teleop
