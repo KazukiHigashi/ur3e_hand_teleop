@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="robot_ip" default="10.0.1.134" />
+  
+  <include file="$(find ur_modern_driver)/launch/ur3e_ros_control.launch">
+    <arg name="robot_ip" value="$(arg robot_ip)"/>
+  </include>
+
+  <node name="teleop_by_key" pkg="ur_control" type="joint_position_keyboard.py" args="--robot" respawn="false" output="screen"/>
+
+  <node name="go_initial_pose" pkg="higashi_experiment" type="go_init_state.py" args="--robot" output="screen"/>
+
+</launch>
