@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y \
     ros-kinetic-gripper-action-controller \
     ros-kinetic-orocos-kdl \
     ros-kinetic-gazebo-ros-pkgs \
+    ros-kinetic-rosserial \
+    ros-kinetic-rosserial-arduino \
     # install catkin
     ros-kinetic-catkin \
     python-catkin-tools \
