@@ -3,3 +3,9 @@ ros_arduino_converter/\.idea/
 mount_point/ros_lib
 
 *.swp
+
+\.idea/
+
+mount_point/higashi_experiment/record/
+
+mount_point/ros_arduino_converter/pca_source/

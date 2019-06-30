@@ -1,0 +1,33 @@
+<launch>
+  <arg name="serial_port" default="/dev/ttyUSB0"/>\
+  <arg name="version" default="3"/>
+  <arg name="protocol" default="8bit"/>
+  <arg name="calibration" default="$(find sr_cyberglove_config)/calibrations/cyberglove.cal"/>
+  <!-- Activate internal cybeglove data filtering -->
+  <arg name="filter" default="true"/>
+  <arg name="record_path" default="/record/grasp/1.bag"/>
+
+  <!-- <param name="robot_description" textfile="$(find cyberglove)/model/cyberglove.xml"/>
+  -->
+  <node pkg="cyberglove" name="cyberglove" type="cyberglove_node" >
+    <param name="cyberglove_prefix" type="string" value="/cyberglove" />
+    <param name="sampling_frequency" type="double" value="100.0" />
+    <param name="publish_frequency" type="double" value="10.0" />
+    <param name="path_to_glove" type="string" value="$(arg serial_port)" />
+    <param name="path_to_calibration" type="string" value="$(arg calibration)" />
+    <param name="cyberglove_version" type="string" value="$(arg version)" />
+    <param name="streaming_protocol" type="string" value="$(arg protocol)" />
+    <param name="filter" type="bool" value="$(arg filter)" />
+  </node>
+
+  <node name="serial_open_node" pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0" />
+
+  <node name="glovetohand_converter_node" pkg="ros_arduino_converter" type="float_arr_converter.py" output="screen"/>
+
+  <node pkg="rosbag" type="record" name="recorder_node"
+    args="-o
+        $(find higashi_experiment)$(arg record_path)
+        /cyberglove/raw/joint_states
+        /joints_pos"
+        />
+</launch>
