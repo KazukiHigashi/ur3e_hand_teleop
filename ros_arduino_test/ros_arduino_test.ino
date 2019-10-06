@@ -40,7 +40,7 @@ void setup()
 {
   int i;
   joint[0].attach(PIN_N[0]);
-  joint[0].write(0);
+  joint[0].write(80);
   for(i=1;i<10;i++){
     joint[i].attach(PIN_N[i]);
     joint[i].write(90);

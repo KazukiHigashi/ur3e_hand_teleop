@@ -4,12 +4,12 @@ import rospy
 from std_msgs.msg import Float32MultiArray
 from sensor_msgs.msg import JointState
 
-extracted_joint_list = [True, True, False, False, True, True, False, True, True, False, False, True, True, False,
+extracted_joint_list = [True, False, True, False, True, True, False, True, True, False, False, True, True, False,
                         False, True, True, False, False, False, False, False]
 
-joint_bias = [-70, 240, 180, 180, 181, 173, 180, 180, 165, 180,
+joint_bias = [170, 240, 180, 180, 181, 173, 180, 180, 165, 180,
               180, 188, 180, 180, 180, 192, 248, 180, 180, 180, 180]
-joint_coef = [290, -235, -150, -150, -160, -160, -150, -140, -140, -150,
+joint_coef = [-320, -235, -150, -150, -160, -160, -150, -140, -140, -150,
               -150, -160, -150, -150, -150, -170, -290, -150, -150, -150, -150, -150]
 
 

@@ -6,6 +6,11 @@
   <!-- Activate internal cybeglove data filtering -->
   <arg name="filter" default="true"/>
   <arg name="record_path" default="/record/test/1.bag"/>
+  <arg name="robot_ip" default="10.0.1.120" />
+  
+  <include file="$(find ur_modern_driver)/launch/ur3e_ros_control.launch">
+    <arg name="robot_ip" value="$(arg robot_ip)"/>
+  </include>
 
   <!-- <param name="robot_description" textfile="$(find cyberglove)/model/cyberglove.xml"/>
   -->
@@ -20,6 +25,8 @@
     <param name="filter" type="bool" value="$(arg filter)" />
   </node>
 
+  <node name="teleop_by_key" pkg="higashi_experiment" type="keyboard_teleop.py" args="--robot" respawn="false" output="screen"/>
+
   <node name="serial_open_node" pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0" />
 
   <node name="glovetohand_converter_node" pkg="ros_arduino_converter" type="float_arr_converter.py" output="screen"/>
@@ -28,6 +35,8 @@
     args="-O
         $(find higashi_experiment)$(arg record_path)
         /cyberglove/raw/joint_states
-        /joints_pos"
+        /joints_pos
+        /key
+        "
         />
 </launch>

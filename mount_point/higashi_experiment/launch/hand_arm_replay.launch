@@ -1,0 +1,33 @@
+<launch>
+  <arg name="path_to_bag_dir" default="scissor/1.bag"/>
+  <arg name="use_synergy" default="1" />
+
+  <arg name="pc_num" default="1"/>
+  <arg name="dir_name" default="grasp"/>
+  <arg name="synergy_type" default="grasp"/>
+
+  <arg name="robot_ip" default="10.0.1.120" />
+  
+  <!-- arm -->
+  <include file="$(find ur_modern_driver)/launch/ur3e_ros_control.launch">
+    <arg name="robot_ip" value="$(arg robot_ip)"/>
+  </include>
+  <node name="teleop_by_key" pkg="higashi_experiment" type="keyboard_teleop.py" args="--robot" respawn="false" output="screen"/>
+  
+  <!-- hand -->
+  <node name="serial_open_node" pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0" />
+  <node name="approximator_node" pkg="ros_arduino_converter" type="synergy_approximator.py"
+        args="$(arg pc_num) $(arg dir_name) $(arg synergy_type)" />
+
+  <group if="$(arg use_synergy)">
+    <node pkg="rosbag" type="play" name="replay_with_synergy_node"
+      args="$(find higashi_experiment)/record/$(arg path_to_bag_dir)
+      /joints_pos:=/joints_pos_old"/>
+  </group>
+
+  <group unless="$(arg use_synergy)">
+    <node pkg="rosbag" type="play" name="replay_with_no_synergy_node"
+      args="$(find higashi_experiment)/record/$(arg path_to_bag_dir)"/>
+  </group>
+
+</launch>

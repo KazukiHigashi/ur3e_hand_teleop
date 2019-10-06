@@ -4,6 +4,10 @@ mount_point/ros_lib
 
 *.swp
 
+*.pyc
+
+*.bag
+
 \.idea/
 
 mount_point/higashi_experiment/record/

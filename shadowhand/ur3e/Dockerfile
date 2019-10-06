@@ -86,7 +86,7 @@ RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash \
                && catkin build"
 
 RUN python -m pip install pip --upgrade && \
-    pip install matplotlib==2.2.3 spicy protobuf pyyaml pyquaternion rospkg lxml tqdm
+    pip install matplotlib==2.2.3 spicy protobuf pyyaml pyquaternion rospkg lxml tqdm sklearn
 
 # Gazebo
 # setup keys
